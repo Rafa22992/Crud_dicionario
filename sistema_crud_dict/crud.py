@@ -1,5 +1,5 @@
 registrer_dict = {}
-vl_salve = ''
+vl_salve = '' # salva o valor da chave
 salve_values = []
 border = '-' * 35
 from os import system
@@ -12,7 +12,7 @@ def header():
     print('A- inserir par de (chave/valor)')
     print('B- alterar par de (chave/valor)')
     print('C- apagar par de (chave/valor)')
-    print('D- ver dict completo')
+    print('D- ver dicionário completo')
     print('E- sair do sistema')
     print('=' * 35)
 
@@ -21,62 +21,76 @@ def data_collect(name_key,name_value):
     registrer_dict[name_key] = name_value
     return registrer_dict
 
-# eidtar dados
-def data_edition(old_key,name_key,name_value):
+# edita dados
+def data_edition(old_key,new_key,new_value):
     del registrer_dict[old_key]
     registrer_dict.update(
-        {name_key: name_value
-         
+        {new_key: new_value
          })
     return registrer_dict
 
-# function key_del
+#apaga chaves
 def data_del(name_key,salve_key):
     salve_key = registrer_dict.pop(name_key)
     return salve_key
 
+# salva as chaves excluídas
+def salve_keys(key,value):
+    salve_values.append((key,value))
+    print(f'valor salvo: {salve_values}')
+
 #limpar tela
 def clean_screen():
     print('Limpar tela?')
-    new_screen = input('[s]im /[n]ão: ')
-    print(border)
-    new_screen = new_screen.startswith('s') and new_screen.endswith('s')
+    new_screen = input('[s]im /[n]ão: ').upper()
+    new_screen = options(new_screen,'S')
     if new_screen:
         system('cls')
+# -------------------- funções de um nó
+
+# opções do usuário
+options = lambda option,letter: option.startswith(letter) and option.endswith(letter)
+# condição para dicionário vazio
+null_value = lambda null_dict: len(null_dict) == 0
+# caso vl digitado não esteja no dicionário
+no_dict = lambda user_input,dict: not user_input in dict
 
 while True:
     header()
-    option = input('Escolha uma opção [A] [B] [C] [D]: ').upper()
+    option = input('Escolha uma opção [A]-[B]-[C]-[D]-[E]: ').upper()
     print(border)
     new_screen = clean_screen()
 
-    data_insert = option.startswith('A') and option.endswith('A')
+    allowed_options = not option in 'ABCDE' #opções permetidas
+    not_alpha = not option.isalpha()
+    max_one = len(option) > 1
 
-    if not option.isalpha() or len(option) > 1:
+    if not_alpha or max_one or allowed_options:
         print('DADOS INVÁLIDOS: Digite Novamente.')
-        continue
-
+        
+    data_insert = options(option,'A')
+    
     # inserir dados
     if data_insert:
         name_key = input('Digite o nome da chave: ').upper()
-        print('-' * 35)
+        print(border)
         name_value = input('Digite o valor da chave: ').upper()
-        print('-' * 35)
+        print(border)
         dict_data = data_collect(name_key,name_value)
         clean_screen()
 
     #alterar chave
-    option_edition = option.startswith('B') and option.endswith('B')
+    option_edition =  options(option,'B')
 
     if option_edition:
         old_key = input('Chave que deseja trocar: ').upper()
         print(border)
         clean_screen()
 
-        if not old_key in registrer_dict:
+        no_dict_old_key = no_dict(old_key,registrer_dict)
+        if no_dict_old_key:
             print('Essa chave não está registrada!!!')
-            continue
-
+            
         else:
             new_key = input('Nova chave: ').upper()
             print(border)
@@ -85,49 +99,48 @@ while True:
             data_edition(old_key,new_key,new_value)
         
     #apagar chave
-    data_delete = option.startswith('C') and option.endswith('C')
-    dict_null = len(registrer_dict) == 0
-
+    data_delete =  options(option,'C')
+    dict_null = null_value(registrer_dict)
+    
     if data_delete:
         delete = input('Apagar Chave: ').upper()
         print(border)
 
-        if not delete in registrer_dict:
+        no_dict_delete = no_dict(delete,registrer_dict)
+        if no_dict_delete:
             print('Essa chave não está registrada!!!')
-            continue
-
+            
         else:
             print('Deseja salvar o valor da chave excluída?')
             print(border)
             salve_key = input('[s]im / [n]ão ').upper()
             
-            yes = salve_key.startswith('S') and salve_key.endswith('S')
+            yes =  options(salve_key,'S')
 
             if yes:
                 salve_sucessul = data_del(delete,vl_salve)
-                salve_values.append(salve_sucessul) # opção para acessar os valores salvos
-                print(f'valor salvo: {salve_values}')
-            
+                sal_k = salve_keys(delete,salve_sucessul)
+                                      
             else:
                 key_del = data_del(delete,vl_salve)
                 clean_screen()
                 print('Chave excuída com sucesso!!!')
           
     # ver dicionário
-    dict_view = option.startswith('D') and option.endswith('D')
+    dict_view =  options(option,'D')
 
     if dict_view:
         if dict_null:
             print(f'{"Dicionário vazio":-^35}')
-            continue
-
+            
         else:
             for name_key,name_values in registrer_dict.items():
-                print(f'|{name_key} : {name_values}|')
+                key_value = f'|{name_key}:{name_values}|'
+                print(f'{key_value:^35}')
 
-    sair = option.startswith('E') and option.endswith('E')
+    bye =  options(option,'E')
 
-    if sair:
+    if bye:
         print('Até Logo!!!')
         print(border)
-        break
+        break  
